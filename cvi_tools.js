@@ -112,22 +112,87 @@ class CVIProfile {
         this.innovator = innovator;
         this.banker = banker;
         this.builder = builder;
+        
+        /* meta values */
+        this.intuitiveType = this.builder + this.merchant;
+        this.independentType = this.builder + this.innovator;
+        this.practicalType = this.builder + this.banker;
+        this.creativeType = this.merchant + this.innovator;
+        this.communityType = this.merchant + this.banker;
+        this.cognitiveType = this.innovator + this.banker;
     }
     
-    getMerchantPoint() {
+    /*
+     * Provide a Point instanrce for each attribute
+     */
+    merchantPoint() {
         return new Point(this.merchant, -this.merchant);
     }
 
-    getInnovatorPoint() {
+    innovatorPoint() {
         return new Point(this.innovator, this.innovator);
     }
 
-    getBuilderPoint() {
+    builderPoint() {
         return new Point(-this.builder, -this.builder);
     }
 
-    getBankerPoint() {
+    bankerPoint() {
         return new Point(-this.banker, this.banker);
+    }
+    
+    /*
+     * Provide a Line instance for the relevant relations
+     */
+    merchantBuilderLine() {
+        return new Line(this.merchantPoint(), this.builderPoint());
+    }
+    
+    builderBankerLine() {
+        return new Line(this.builderPoint(), this.bankerPoint());
+    }
+
+    bankerInnovatorLine() {
+        return new Line(this.bankerPoint(), this.innovatorPoint());
+    }
+    
+    innovatorMerchantLine() {
+        return new Line(this.innovatorPoint(), this.merchantPoint());
+    }
+    
+    /*
+     * Sets of points which describe each quadrant
+     */
+    merchantPoints() {
+        return [
+            this.merchantBuilderLine().yIntercept(),
+            this.merchantPoint(),
+            this.innovatorMerchantLine().xIntercept()
+        ];
+    }
+    
+    innovatorPoints() {
+        return [
+            this.innovatorMerchantLine().xIntercept(),
+            this.innovatorPoint(),
+            this.bankerInnovatorLine().yIntercept()
+        ];
+    }
+
+    builderPoints() {
+        return [
+            this.merchantBuilderLine().yIntercept(),
+            this.builderPoint(),
+            this.builderBankerLine().xIntercept()
+        ];
+    }
+
+    bankerPoints() {
+        return [
+            this.bankerInnovatorLine().yIntercept(),
+            this.bankerPoint(),
+            this.builderBankerLine().xIntercept()
+        ];
     }
 }
 
@@ -178,52 +243,43 @@ function cvi() {
     var origin = new Point(c.width / 2, c.height / 2);
     
     /* this data will be pulled from somewhere */
-    var cviProfile = new CVIProfile('Mark Nicholson', 21, 29, 8, 14);
+    var cviMark = new CVIProfile('Mark Nicholson', 21, 29, 8, 14);
+    var cviKaren = new CVIProfile('Karen Nicholson', 29, 14, 13, 16);
+    var cviProfile = cviKaren; //[ cviKaren, cviMark ];
     
-    /* create the hard points */
-    var merchantPt = cviProfile.getMerchantPoint();
-    var innovatorPt = cviProfile.getInnovatorPoint();
-    var builderPt = cviProfile.getBuilderPoint();
-    var bankerPt = cviProfile.getBankerPoint();
-    
-    /* setup the lines in between */
-    var merBui = new Line(merchantPt, builderPt);
-    var buiBan = new Line(builderPt, bankerPt);
-    var banInn = new Line(bankerPt, innovatorPt);
-    var innMer = new Line(innovatorPt, merchantPt);
-
+    /* data to render the image */
     var quads = [
         {
             'quadrant': [ 1, -1 ],
-            'points': [ merBui.yIntercept(), cviProfile.getMerchantPoint(),  innMer.xIntercept() ],
+            'points': cviProfile.merchantPoints(),
             'title': "Merchant "+ cviProfile.merchant,
             'core-value': "[Love]",
-            'fill-colour': [ '#345AA3', '#D5DDEC' ], // gradient from: #D5DDEC -> #345AA3
-            'title-location': [ 0.9, 0.1 ]
+            'fill-colour': [ '#345AA3', '#D5DDEC' ],
+            'title-location': [ 0.9, 0.05 ]
         },
         {
             'quadrant': [ 1, 1 ],
-            'points': [ innMer.xIntercept(), cviProfile.getInnovatorPoint(), banInn.yIntercept() ],
+            'points': cviProfile.innovatorPoints(),
             'title': "Innovator " + cviProfile.innovator,
             'core-value': "[Wisdom]",
-            'fill-colour': [ '#D55EEA', '#F6DCFB' ], // gradient from: #F6DCFB -> #D55EEA
-            'title-location': [ 0.9, 0.9 ]
+            'fill-colour': [ '#D55EEA', '#F6DCFB' ],
+            'title-location': [ 0.9, 0.95 ]
         },
         {
             'quadrant': [ -1, 1 ],
-            'points': [ banInn.yIntercept(), cviProfile.getBankerPoint(),    buiBan.xIntercept() ],
+            'points': cviProfile.bankerPoints(),
             'title': "Banker " + cviProfile.banker,
             'core-value': "[Knowledge]",
-            'fill-colour': [ '#32842D', '#C1DCBF' ], // gradient from: #C1DCBF -> #32842D
-            'title-location': [ 0.1, 0.9 ]
+            'fill-colour': [ '#32842D', '#C1DCBF' ],
+            'title-location': [ 0.1, 0.95 ]
         },
         {
             'quadrant': [ -1, -1 ],
-            'points': [ buiBan.xIntercept(), cviProfile.getBuilderPoint(),   merBui.yIntercept() ],
+            'points': cviProfile.builderPoints(),
             'title': "Builder " + cviProfile.builder,
             'core-value': "[Power]",
-            'fill-colour': [ '#F03230', '#FBC9C8' ], // gradient from: #FBC9C8 -> #F03230
-            'title-location': [ 0.1, 0.1 ]
+            'fill-colour': [ '#F03230', '#FBC9C8' ],
+            'title-location': [ 0.1, 0.05 ]
         }
     ];
     
@@ -237,8 +293,6 @@ function cvi() {
             pts[pi].setScale(scale);
         }
     }
-
-    var addRect = true;
     
     /* draw quadrants */
     for (qi in quads) {
@@ -254,13 +308,19 @@ function cvi() {
         ctx.closePath();
         ctx.fill();
         
-        /* draw polygon */
+        /*
+         * draw polygon
+         */
+        
+        /* configure gradient */
         var grd = ctx.createLinearGradient(origin.x(),
                                            origin.y(), 
                                            qInfo['points'][1].x(),
                                            qInfo['points'][1].y());
         grd.addColorStop(0, qInfo['fill-colour'][1]);
         grd.addColorStop(1, qInfo['fill-colour'][0]);
+        
+        /* add lines to form the polygon for each profile */
         ctx.beginPath();
         ctx.fillStyle = grd;
         ctx.moveTo(origin.x(), origin.y());
@@ -271,7 +331,9 @@ function cvi() {
         ctx.closePath();
         ctx.fill();
         
-        /* add text */
+        /*
+         * add text
+         */
         ctx.font = "20px Arial";
         ctx.fillStyle = "black";
         ctx.textAlign = "center";
@@ -283,7 +345,9 @@ function cvi() {
                      c.width * qInfo['title-location'][0], 
                      c.height * qInfo['title-location'][1] + 20);
         
-        /* draw points */
+        /*
+         * draw points
+         */
         for (pi in qInfo['points']) {
             pt = qInfo['points'][pi];
             ctx.beginPath();
@@ -294,13 +358,14 @@ function cvi() {
         }
     }
     
-    /* draw coordinate lines */
+    /*
+     * draw coordinate lines
+     */
     ctx.beginPath()
     ctx.moveTo(c.width / 2, 0);
     ctx.lineTo(c.width / 2, c.height);
     ctx.lineWidth = 6;
     ctx.strokeStyle = 'white';
-
     ctx.stroke();
 
     ctx.moveTo(0, c.height / 2);
