@@ -234,7 +234,7 @@ class CVIRender {
         this.canvasID = canvasID;
         this.canvas = document.getElementById("cviCanvas");
         this.ctx = this.canvas.getContext("2d");
-        
+
         /* have everyone understand the same size */
         this.ctx.width = this.canvas.width;
         this.ctx.height = this.canvas.height;
@@ -361,7 +361,11 @@ class CVIRender {
             
             /* figure out the parameters */
             att = qInfo['title'].toLowerCase();
-            title = qInfo['title'] + " " + cviProfile[att];
+            title = qInfo['title'] + " ";
+            if (Number.isInteger(cviProfile[att]))
+                title += cviProfile[att];
+            else
+                title += cviProfile[att].toFixed(2);
             xLoc = this.canvas.width * qInfo['title-location'][0];
             yLoc = this.canvas.height * qInfo['title-location'][1];
             
@@ -554,6 +558,37 @@ function cvi(name) {
     return;
 }
 
+function cviTool(name, folks) {
+    if (!folks || folks.length == 0)
+        return;
+
+    /* setup the renderer */
+    var cviRender = new CVIRender("cviCanvas");
+
+    /* create the profiles */
+    var profiles = [];
+    for (f in folks) {
+        console.log(folks[f]);
+        var p = new CVIProfile(folks[f][0],
+                               folks[f][1],
+                               folks[f][2],
+                               folks[f][3],
+                               folks[f][4]);
+        profiles.push(p);
+        console.log("Profile: %s", p.toString());
+    }
+    
+    /* render the single one */
+    if (profiles.length == 1) {
+        cviRender.render( profiles[0] );
+        return;
+    }
+    
+    console.log("%s: %s", name, profiles);
+    var group = new CVIGroupProfile(name, profiles);
+    cviRender.render( group );
+}
+
 /******************************************************************************
  *
  *                      Test tools
@@ -571,28 +606,9 @@ class Tester {
 Tester.myStaticProperty = "yes";
 
 function cvi_test() {
-    var info;
-    info = document.getElementsByClassName("w3-code");
-    console.log(info[0].toString());
-    console.log("Len: " + info.length);
-    console.log(info[0].attributes);
-
-    info = document.getElementsByClassName("cvi-canvas");
-    console.log(info.toString());
-    console.log("Len: " + info.length);
-  
-    var hui = /*document.styleSheets[0].rules ||*/ document.styleSheets[0].cssRules;
-
-
-    var styleBySelector = {};
-    for (var i=0; i<hui.length; i++)
-        styleBySelector[hui[i].selectorText] = hui[i].style;
-
-    console.log("Len2: " + styleBySelector.keys.length);
-    
-    var sty = styleBySelector[".cviCanvas"];
-    console.log(sty.toString());
-    
+ 
+    var s = "15";
+    var p;
     
     var t = new Tester();
     //console.log("class_var_def: " + t.class_var_def);
