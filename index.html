@@ -1,13 +1,14 @@
 <html>
     <head>
         <link rel="stylesheet" type="text/css" href="cvi_tools.css"></link>
+        <meta charset="UTF-8">
     </head>
 
 <body>
     <div>
         <div style="width: 100%">
             <div id="cviNames" class="side-box">
-                <table id="cviTable">
+                <table id="cviTable" class="ctable">
                     <thead>
                         <td>*</td>
                         <td>Name</td>
@@ -27,6 +28,7 @@
                         <td><input type="number" id="newInnovator" min="1" max="30"></input></td>
                         <td><input type="number" id="newBanker" min="1" max="30"></input></td>
                         <td><input type="number" id="newBuilder" min="1" max="30"></input></td>
+                        <td></td>
                         </tr>
                     <tr>
                         <td id="fileLoadCellId" colspan="5">
@@ -135,13 +137,15 @@ function delAllRows() {
     }
 }
 
-function delRow(event, rowId) {
-    event = event || window.event;
+function delRow(rowId) {
+    console.log("rowId: " + rowId);
+    //event = event || window.event;
     
     var table = document.getElementById('cviTable').getElementsByTagName('tbody')[0];
     console.log("table.length: " + table.rows.length);
+    console.log("rowID: " + rowId);
     var row = document.getElementById(rowId);
-    console.log("rowID: " + rowId + "  idx: " + row.rowIndex);
+    console.log("  idx: " + row.rowIndex);
     table.deleteRow( row.rowIndex - 1 );
 }
     
@@ -220,9 +224,7 @@ function __addTableRow(items) {
     /* set the delete button */
     newCell = newRow.insertCell(6);
     var delBtn = document.createElement('button');
-    delBtn.onclick = function() { delRow(event, newRow.id); };
-    //delBtn.addEventListener('click', function() { delRow(newRow.rowIndex); });
-    //delBtn.onclick = delRow;
+    delBtn.onclick = function() { delRow(newRow.id); };
     delBtn.innerHTML = "x";
     newCell.appendChild(delBtn);
 }

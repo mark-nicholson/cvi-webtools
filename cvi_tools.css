@@ -34,3 +34,20 @@ p.capitalize {
     border: 2px solid black;
     padding: 10px;
 }
+table {
+    table-layout: fixed;
+}
+
+.ctable {
+	margin: 0 0 0 0px;
+    table-layout:fixed;
+}
+thead {
+    background-color: lightgrey;
+}
+td {
+    text-align: center;
+}
+tfoot {
+    background-color: lightgray;
+}
