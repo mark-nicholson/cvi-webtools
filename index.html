@@ -1,16 +1,27 @@
 <html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="cvi_tools.css"></link>
+    </head>
 
 <body>
-    
-    <canvas  id="cviCanvas" width="700" height="700">
-    
-    </canvas>    
+    <div>
+        <div style="width: 100%">
+            <div id="cviNames" class="side-box">Names</div>
+            <div class="cvi-canvas" style="float: right">
+                <canvas class="cvi-canvas" id="cviCanvas"  width="700" height="700" ></canvas>    
+            </div>
+        </div>
+        <div height="10px" width="200px"> </div>
+        <div id="cviButtons" class="side-box">
+            <button type="button" onclick="cvi_test()">Test</button>
 
-
+            <button type="button" onclick="cvi('mark')">Mark</button>
+            <button type="button" onclick="cvi('karen')">Karen</button>
+            <button type="button" onclick="cvi('group')">Group</button>
+        </div>
+    </div>
 </body>
 
 <script type="text/javascript" src="cvi_tools.js"></script>
-<button type="button" onclick="cvi()">Try it</button>
-<button type="button" onclick="cvi_test()">Test</button>
 
 </html>

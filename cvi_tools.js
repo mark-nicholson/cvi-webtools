@@ -195,183 +195,410 @@ class CVIProfile {
         ];
     }
 }
+/* Static Class data */
+CVIProfile.maxScore = 30;
 
-function cvi_test() {
-    var merchantPt = new Point(-21, 21);
-    var innovatorPt = new Point(29, 29);
-    var builderPt = new Point(-14, -14);
-    var bankerPt = new Point(-8, 8);
-    var origin = new Point(400, 400);
-    
-    var merBui = new Line(merchantPt, builderPt);
-    var buiBan = new Line(builderPt, bankerPt);
-    var banInn = new Line(bankerPt, innovatorPt);
-    var innMer = new Line(innovatorPt, merchantPt);
-    
-    merBui.dump();
-    buiBan.dump();
-    banInn.dump();
-    innMer.dump();
-    
-    merchantPt.setOrigin(origin);
-    innovatorPt.setOrigin(origin);
-    innMer.update();
-    innMer.dump();
-    
-    console.log("merchant: [%s,%s]", merchantPt.x(), merchantPt.y());
-    merchantPt.setScale(5);
-    console.log("merchant: [%s,%s]", merchantPt.x(), merchantPt.y());
-    merchantPt.setOrigin(origin);
-    console.log("merchant: [%s,%s]", merchantPt.x(), merchantPt.y());
-    
-    var s = "[{0},{1}]".format(merchantPt.x(), merchantPt.y());
-    console.log(s);
+class CVIGroupProfile extends CVIProfile {
+    constructor(name, profileList) {
+        var i, inn=0, mer=0, ban=0, bui=0;
+
+        /* aggregate the values */
+        for (i in profileList) {
+            var p = profileList[i];
+            mer += p.merchant;
+            inn += p.innovator;
+            ban += p.banker;
+            bui += p.builder;
+        }
+        
+        /* average them out */
+        super(name,
+                          mer / profileList.length,
+                          inn / profileList.length,
+                          ban / profileList.length,
+                          bui / profileList.length);
+        
+        /* remember the individual profiles */
+        this.profiles = profileList;        
+    }
 }
 
 
-function cvi() {
-    "use strict";
-    var c = document.getElementById("cviCanvas");
-    var ctx = c.getContext("2d");
+/*
+ * CVIRender - Class to support the creation of a canvas drawing
+ *             of the CVI profiles provided.
+ */
+class CVIRender {
+
+    constructor(canvasID) {
+        this.canvasID = canvasID;
+        this.canvas = document.getElementById("cviCanvas");
+        this.ctx = this.canvas.getContext("2d");
+        
+        /* have everyone understand the same size */
+        this.ctx.width = this.canvas.width;
+        this.ctx.height = this.canvas.height;
     
-    /* have everyone understand the same size */
-    ctx.width = c.width;
-    ctx.height = c.height;
-    
-    /* set the general params */
-    var scale = c.width / 2 / 30;
-    var origin = new Point(c.width / 2, c.height / 2);
-    
-    /* this data will be pulled from somewhere */
-    var cviMark = new CVIProfile('Mark Nicholson', 21, 29, 8, 14);
-    var cviKaren = new CVIProfile('Karen Nicholson', 29, 14, 13, 16);
-    var cviProfile = cviKaren; //[ cviKaren, cviMark ];
-    
-    /* data to render the image */
-    var quads = [
-        {
+        /* set the general params */
+        this.scale = this.canvas.width / 2 / CVIProfile.maxScore;
+        this.origin = new Point(
+            this.canvas.width / 2, this.canvas.height / 2);
+    }
+
+    merchantQuadrantInfo() {
+        return {
             'quadrant': [ 1, -1 ],
-            'points': cviProfile.merchantPoints(),
-            'title': "Merchant "+ cviProfile.merchant,
-            'core-value': "[Love]",
+            'points': [],
+            'title': "Merchant",
+            'core-value': "Love",
             'fill-colour': [ '#345AA3', '#D5DDEC' ],
             'title-location': [ 0.9, 0.05 ]
-        },
-        {
-            'quadrant': [ 1, 1 ],
-            'points': cviProfile.innovatorPoints(),
-            'title': "Innovator " + cviProfile.innovator,
-            'core-value': "[Wisdom]",
-            'fill-colour': [ '#D55EEA', '#F6DCFB' ],
-            'title-location': [ 0.9, 0.95 ]
-        },
-        {
-            'quadrant': [ -1, 1 ],
-            'points': cviProfile.bankerPoints(),
-            'title': "Banker " + cviProfile.banker,
-            'core-value': "[Knowledge]",
-            'fill-colour': [ '#32842D', '#C1DCBF' ],
-            'title-location': [ 0.1, 0.95 ]
-        },
-        {
-            'quadrant': [ -1, -1 ],
-            'points': cviProfile.builderPoints(),
-            'title': "Builder " + cviProfile.builder,
-            'core-value': "[Power]",
-            'fill-colour': [ '#F03230', '#FBC9C8' ],
-            'title-location': [ 0.1, 0.05 ]
-        }
-    ];
-    
-    var qi, pi, pts, pt, qInfo;
-    
-    /* translate the points */
-    for (qi in quads) {
-        pts = quads[qi]['points'];
-        for (pi in pts) {
-            pts[pi].setOrigin(origin.x(), origin.y());
-            pts[pi].setScale(scale);
         }
     }
     
-    /* draw quadrants */
-    for (qi in quads) {
-        qInfo = quads[qi];
-        
-        /* draw shaded rectangle */
-        ctx.beginPath();
-        ctx.rect(c.width/2 + 3*qInfo['quadrant'][0],
-                 c.height/2 + 3*qInfo['quadrant'][1],
-                 c.width/2 * qInfo['quadrant'][0],
-                 c.height/2 * qInfo['quadrant'][1]);
-        ctx.fillStyle = '#E6E6E6';
-        ctx.closePath();
-        ctx.fill();
-        
-        /*
-         * draw polygon
-         */
-        
-        /* configure gradient */
-        var grd = ctx.createLinearGradient(origin.x(),
-                                           origin.y(), 
-                                           qInfo['points'][1].x(),
-                                           qInfo['points'][1].y());
-        grd.addColorStop(0, qInfo['fill-colour'][1]);
-        grd.addColorStop(1, qInfo['fill-colour'][0]);
-        
-        /* add lines to form the polygon for each profile */
-        ctx.beginPath();
-        ctx.fillStyle = grd;
-        ctx.moveTo(origin.x(), origin.y());
-        for (pi in qInfo['points']) {
-            pt = qInfo['points'][pi];
-            ctx.lineTo(pt.x(), pt.y());
+    innovatorQuadrantInfo() {
+        return {
+            'quadrant': [ 1, 1 ],
+            'points': [],
+            'title': "Innovator",
+            'core-value': "Wisdom",
+            'fill-colour': [ '#D55EEA', '#F6DCFB' ],
+            'title-location': [ 0.9, 0.95 ]
         }
-        ctx.closePath();
-        ctx.fill();
+    }
+    
+    bankerQuadrantInfo() {
+        return {
+            'quadrant': [ -1, 1 ],
+            'points': [],
+            'title': "Banker",
+            'core-value': "Knowledge",
+            'fill-colour': [ '#32842D', '#C1DCBF' ],
+            'title-location': [ 0.1, 0.95 ]
+        }
+    }
+    
+    builderQuadrantInfo() {
+        return {
+            'quadrant': [ -1, -1 ],
+            'points': [],
+            'title': "Builder",
+            'core-value': "Power",
+            'fill-colour': [ '#F03230', '#FBC9C8' ],
+            'title-location': [ 0.1, 0.05 ]
+        }
+
+    }
+
+    /*
+     * setup the quadrants structure
+     */
+    _get_quadrants(cviProfile) {
+
+        var quads = [
+            this.merchantQuadrantInfo(),
+            this.innovatorQuadrantInfo(),
+            this.bankerQuadrantInfo(),
+            this.builderQuadrantInfo()
+        ];
+
+        /* add the reference points */
+        if (!cviProfile)
+            return quads;
         
-        /*
-         * add text
-         */
-        ctx.font = "20px Arial";
-        ctx.fillStyle = "black";
-        ctx.textAlign = "center";
-        ctx.fillText(qInfo['title'], 
-                     c.width * qInfo['title-location'][0], 
-                     c.height * qInfo['title-location'][1]); 
-        ctx.font = "16px Arial";
-        ctx.fillText(qInfo['core-value'], 
-                     c.width * qInfo['title-location'][0], 
-                     c.height * qInfo['title-location'][1] + 20);
+        quads[0].points = cviProfile.merchantPoints();
+        quads[1].points = cviProfile.innovatorPoints();
+        quads[2].points = cviProfile.bankerPoints();
+        quads[3].points = cviProfile.builderPoints();
+
+        /* translate the points */
+        for (var qi in quads) {
+            var pts = quads[qi].points;
+            for (var pi in pts) {
+                pts[pi].setOrigin(this.origin.x(), this.origin.y());
+                pts[pi].setScale(this.scale);
+            }
+        }
         
-        /*
-         * draw points
-         */
-        for (pi in qInfo['points']) {
-            pt = qInfo['points'][pi];
-            ctx.beginPath();
-            ctx.arc(pt.x(), pt.y(), 2, 0, 2 * Math.PI, false);
-            ctx.fillStyle = 'black';
-            ctx.closePath();
-            ctx.fill();
+        return quads;
+    }
+    
+    /*
+     * Create the background squares for each quadrant.
+     */
+    renderQuandrantBackgrounds() {
+        var qi, qInfo;
+        //var cssColour = 'cviCanvas.quadrant-background-colour';
+        var cssColour = CVIRender.quadrantBackgroundColour;
+        var quads = this._get_quadrants(null);
+        
+        for (qi in quads) {
+            qInfo = quads[qi].quadrant;
+            
+            this.ctx.beginPath();
+            this.ctx.rect(
+                this.canvas.width/2  + 3*qInfo[0],
+                this.canvas.height/2 + 3*qInfo[1],
+                this.canvas.width/2  * qInfo[0],
+                this.canvas.height/2 * qInfo[1]);
+            this.ctx.fillStyle = cssColour;
+            this.ctx.closePath();
+            this.ctx.fill();
         }
     }
     
     /*
-     * draw coordinate lines
+     * Create the background squares for each quadrant.
      */
-    ctx.beginPath()
-    ctx.moveTo(c.width / 2, 0);
-    ctx.lineTo(c.width / 2, c.height);
-    ctx.lineWidth = 6;
-    ctx.strokeStyle = 'white';
-    ctx.stroke();
+    renderTextLayer(cviProfile) {
+        var qi, qInfo;
+        var cssColour = '.cviCanvas.quadrant-background-colour';
+        var quads = this._get_quadrants(null);
+        var xLoc, yLoc, title, att;
+        
+        for (qi in quads) {
+            qInfo = quads[qi];
+            
+            /* figure out the parameters */
+            att = qInfo['title'].toLowerCase();
+            title = qInfo['title'] + " " + cviProfile[att];
+            xLoc = this.canvas.width * qInfo['title-location'][0];
+            yLoc = this.canvas.height * qInfo['title-location'][1];
+            
+            /* configure the action */
+            this.ctx.font = "20px Arial";
+            this.ctx.fillStyle = "black";
+            this.ctx.textAlign = "center";
+            this.ctx.fillText(title, xLoc, yLoc);
+            this.ctx.font = "16px Arial";
+            this.ctx.fillText("[" + qInfo['core-value'] + "]", xLoc, yLoc + 20);
+        }
+    }
+    
+    renderReferencePoints(pList) {
+        var pi, pt;
+        for (pi in pList) {
+            pt = pList[pi];
+            this.ctx.beginPath();
+            this.ctx.arc(pt.x(), pt.y(), 2, 0, 2 * Math.PI, false);
+            this.ctx.fillStyle = 'black';
+            this.ctx.closePath();
+            this.ctx.fill();
+        }
+    }
+    
+    /*
+     * draw polygon
+     */
+    renderPolygon(qInfo, drawBorder) {
+        var gradient, pi, pt;
 
-    ctx.moveTo(0, c.height / 2);
-    ctx.lineTo(c.width, c.height / 2);
-    ctx.stroke();
+        /* configure gradient */
+        gradient = this.ctx.createLinearGradient(this.origin.x(),
+                                                 this.origin.y(), 
+                                                 qInfo['points'][1].x(),
+                                                 qInfo['points'][1].y());
+        gradient.addColorStop(0, qInfo['fill-colour'][1]);
+        gradient.addColorStop(1, qInfo['fill-colour'][0]);
 
+        /* add lines to form the polygon for each profile */
+        this.ctx.beginPath();
+        this.ctx.fillStyle = gradient;
+        this.ctx.moveTo(this.origin.x(), this.origin.y());
+        for (pi in qInfo['points']) {
+            pt = qInfo['points'][pi];
+            this.ctx.lineTo(pt.x(), pt.y());
+        }
+        this.ctx.closePath();
+        this.ctx.fill();
+        
+        if (drawBorder) {
+            this.ctx.beginPath();
+            console.log("Points: %s", qInfo['points'].length);
+            console.log("Border: [%s,%s] -> [%s,%s]",
+                       qInfo['points'][0].x(), qInfo['points'][0].y(),
+                       qInfo['points'][1].x(), qInfo['points'][1].y());
+            this.ctx.moveTo(qInfo['points'][0].x(), qInfo['points'][0].y());
+            this.ctx.lineTo(qInfo['points'][1].x(), qInfo['points'][1].y());
+            this.ctx.lineWidth = 3;
+            this.ctx.strokeStyle = '#afafaf';
+            this.ctx.closePath();
+            this.ctx.stroke();
+
+            console.log("Border: [%s,%s] -> [%s,%s]",
+                       qInfo['points'][1].x(), qInfo['points'][1].y(),
+                       qInfo['points'][2].x(), qInfo['points'][2].y());
+            this.ctx.beginPath();
+            this.ctx.lineWidth = 3;
+            this.ctx.strokeStyle = '#afafaf';
+            this.ctx.moveTo(qInfo['points'][1].x(), qInfo['points'][1].y());
+            this.ctx.lineTo(qInfo['points'][2].x(), qInfo['points'][2].y());
+            this.ctx.closePath();
+            this.ctx.stroke();   
+        }
+    }
+
+    /*
+     * render()
+     *  Draw out the image.
+     *    Input can be a cviProfile, cviGroupProfile or List of cviProfiles.
+     */
+    render(data) {
+        var pi, qi, quads, qInfo;
+        var profile, profiles;
+        var cviProfile;
+        
+        /* identify the input */
+        if (data instanceof CVIGroupProfile) {
+            console.log("Is a CVIGroupProfile");
+            profiles = [];
+            for (pi in data.profiles)
+                profiles.push(data.profiles[pi]);
+            profiles.push(data);            
+            cviProfile = data;
+        }
+        else if (data instanceof CVIProfile) {
+            console.log("Is a CVIProfile");
+            profiles = [ ];
+            cviProfile = data;
+        }
+        else {
+            /* should be a list */
+            cviProfile = data.shift();
+            profiles = data;
+        }
+        
+        /* install the backgrounds for each quadrant */
+        this.renderQuandrantBackgrounds();
+        
+        for (pi in profiles) {
+            profile = profiles[pi];
+            console.log("Rendering: " + profile.name);
+            
+            quads = this._get_quadrants(profile);
+
+            /* draw quadrants */
+            for (qi in quads) {
+                qInfo = quads[qi];
+                this.renderPolygon(qInfo, false);
+                this.renderReferencePoints(qInfo['points']);
+            }
+        }
+        
+        /*
+         * add in the top frame
+         */
+        var drawBorder = (profiles.length != 0);
+        quads = this._get_quadrants(cviProfile);
+        for (qi in quads) {
+            qInfo = quads[qi];
+            this.renderPolygon(qInfo, drawBorder);
+            this.renderReferencePoints(qInfo['points']);
+        }
+        
+
+        /* overlay the headings */
+        this.renderTextLayer(cviProfile);
+        
+        /* draw the white coordinate lines */
+        this.renderCoordinateLines();
+    }
+
+    /*
+    * draw coordinate lines
+    */
+    renderCoordinateLines() {
+        var ctx = this.ctx;
+        var c = this.canvas;
+
+        ctx.beginPath()
+        ctx.moveTo(c.width / 2, 0);
+        ctx.lineTo(c.width / 2, c.height);
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = 'white';
+        ctx.stroke();
+
+        ctx.moveTo(0, c.height / 2);
+        ctx.lineTo(c.width, c.height / 2);
+        ctx.stroke();
+
+    }
+}
+/* statics */
+CVIRender.quadrantBackgroundColour = '#E6E6E6';
+
+/*
+ * Entry point for html to call
+ */
+function cvi(name) {
+    "use strict";
+    
+    /* this data will be pulled from somewhere */
+    var cviMark = new CVIProfile('Mark Nicholson', 21, 29, 8, 14);
+    var cviKaren = new CVIProfile('Karen Nicholson', 29, 14, 13, 16);
+    var cviGroup = new CVIGroupProfile('Nicholsons',
+                                       [cviMark, cviKaren]);
+    var cviProfile;
+    if (name == 'karen')
+        cviProfile = cviKaren;
+    else if (name == 'mark')
+        cviProfile = cviMark;
+    else
+        cviProfile = cviGroup;
+    
+    /* setup the renderer */
+    var cviRender = new CVIRender("cviCanvas");
+
+    /* do it */
+    cviRender.render( cviProfile );
+    return;
+}
+
+/******************************************************************************
+ *
+ *                      Test tools
+ *
+ *****************************************************************************/
+
+
+class Tester {
+    //var class_var_def = 3;
+    //global_instance_var = 4;
+    constructor() {
+        this.cons_var = 2;
+    }
+}
+Tester.myStaticProperty = "yes";
+
+function cvi_test() {
+    var info;
+    info = document.getElementsByClassName("w3-code");
+    console.log(info[0].toString());
+    console.log("Len: " + info.length);
+    console.log(info[0].attributes);
+
+    info = document.getElementsByClassName("cvi-canvas");
+    console.log(info.toString());
+    console.log("Len: " + info.length);
+  
+    var hui = /*document.styleSheets[0].rules ||*/ document.styleSheets[0].cssRules;
+
+
+    var styleBySelector = {};
+    for (var i=0; i<hui.length; i++)
+        styleBySelector[hui[i].selectorText] = hui[i].style;
+
+    console.log("Len2: " + styleBySelector.keys.length);
+    
+    var sty = styleBySelector[".cviCanvas"];
+    console.log(sty.toString());
+    
+    
+    var t = new Tester();
+    //console.log("class_var_def: " + t.class_var_def);
+    //console.log("global_instance_var: " + t.global_instance_var);
+    console.log("con_var: " + t.cons_var);
+    console.log("staticProp: " + Tester.myStaticProperty);
 }
 
 /*}()

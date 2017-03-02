@@ -1,0 +1,36 @@
+/*
+ * CSS for cvi-tools
+ */
+.w3-code {
+    font-family: Consolas, "courier new";
+    font-size: 16px
+}
+
+p.uppercase {
+    text-transform: uppercase;
+}
+p.lowercase {
+    text-transform: lowercase;
+}
+
+p.capitalize {
+    text-transform: capitalize;
+}
+.w3-code-mine {
+    font-family: Consolas, "courier new";
+    font-size: 16px;
+    color: chocolate;
+}
+.cvi-canvas {
+    background-color: beige;
+    width: 700px;
+    height: 700px;
+}
+
+.side-box {
+    width: 200px;
+    height: 300px;
+    float: left;
+    border: 2px solid black;
+    padding: 10px;
+}
