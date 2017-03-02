@@ -1,0 +1,28 @@
+{
+  "name": "cvi-tools",
+  "version": "0.9.0",
+  "description": "An HTML5 utility to display and compare Core-Value-Index profiles",
+  "main": "cvi_tools.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "build": "nodejs node_modules/uglify-js-harmony/bin/uglifyjs cvi_tools.js --mangle --comments /@source/ > cvi-tools.min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mark-nicholson/cvi-webtools"
+  },
+  "keywords": [
+    "cvi",
+    "core-values"
+  ],
+  "author": "Mark Nicholson <nicholson.mark@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mark-nicholson/cvi-webtools/issues"
+  },
+  "homepage": "https://github.com/mark-nicholson/cvi-webtools#readme",
+  "devDependencies": {
+      "uglify-js-harmony": "^2.7.5",
+      "file-saver": "1.3"
+  }
+}
