@@ -1,6 +1,6 @@
 {
   "name": "cvi-tools",
-  "version": "0.9.0",
+  "version": "0.9.5",
   "description": "An HTML5 utility to display and compare Core-Value-Index profiles",
   "main": "cvi-tools.js",
   "scripts": {
@@ -23,6 +23,7 @@
   "homepage": "https://github.com/mark-nicholson/cvi-webtools#readme",
   "devDependencies": {
       "uglify-js-harmony": "^2.7.5",
-      "file-saver": "1.3"
+      "file-saver": "1.3",
+      "svg.js": "2.4.0"
   }
 }

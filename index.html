@@ -44,6 +44,7 @@
             <div class="cvi-canvas" style="float: right">
                 <canvas class="cvi-canvas" id="cviCanvas"  width="700" height="700" ></canvas>    
             </div>
+            <div id="cviSVG" width="700" height="700"></div>
         </div>
     </div>
 </body>
@@ -91,6 +92,7 @@ function loadTestData() {
         __addTableRow(items[i]);
     }
 }
+/* for debug */
 //window.onload = loadTestData;
     
     
@@ -102,8 +104,8 @@ function fileUpload() {
     for (var fidx = 0; fidx < fileList.length; fidx++) {
         fileObj = fileList[fidx];
         
-        console.log("File Name: " + fileObj.name);
-        console.log("File Size: " + fileObj.size);
+        //console.log("File Name: " + fileObj.name);
+        //console.log("File Size: " + fileObj.size);
         
         var jData;
         var reader = new FileReader();
@@ -112,7 +114,7 @@ function fileUpload() {
             try {
                 jData = JSON.parse(evt.target.result);
                 for (var ji in jData) {
-                    console.log("Got:" + jData[ji]);
+                    //console.log("Got:" + jData[ji]);
                     __addTableRow(jData[ji]);
                 }
             } catch(e) {
@@ -198,7 +200,7 @@ function uniqueRowID() {
     
 /* Expecting 'items' to be complete  and valid */
 function __addTableRow(items) {
-    console.log("__addTableRow(): ", items);
+    //console.log("__addTableRow(): ", items);
     
     var tableRef = document.getElementById('cviTable').getElementsByTagName('tbody')[0];
     
@@ -269,6 +271,7 @@ function tableScan() {
 
 </script>
 <script type="text/javascript" src="node_modules/file-saver/FileSaver.min.js"></script>
+<script type="text/javascript" src="node_modules/svg.js/dist/svg.min.js"></script>
 <script type="text/javascript" src="cvi-tools.js"></script>
 
 </html>

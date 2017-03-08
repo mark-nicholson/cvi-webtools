@@ -1,15 +1,12 @@
-/*(function () {
-    'use strict';
+/*
+ * CVI Tools
+ *   Classes to render Core-Values-Index profiles in HTML5
+ */
 
-    function about() {
-        return "Version 0.1";
-    }
-    
-    function spam() {
-        alert("My First Jquery Test");
-    }
-*/
+/* be formal about it */
+"use strict";
 
+/* extend the string so it can do an sprintf type conversion */
 if (!String.prototype.format) {
   String.prototype.format = function() {
     var args = arguments;
@@ -234,6 +231,12 @@ class CVIRender {
         this.canvasID = canvasID;
         this.canvas = document.getElementById("cviCanvas");
         this.ctx = this.canvas.getContext("2d");
+        
+        var svgDiv = document.getElementById('cviSVG');
+        while (svgDiv.childElementCount > 0)
+            svgDiv.removeChild(svgDiv.firstChild);
+        
+        this.svg = SVG('cviSVG').size(700, 700);
 
         /* have everyone understand the same size */
         this.ctx.width = this.canvas.width;
@@ -344,6 +347,19 @@ class CVIRender {
             this.ctx.fillStyle = cssColour;
             this.ctx.closePath();
             this.ctx.fill();
+
+            /* svg */
+            var x, y, w, h;
+            w = this.svg.width()/2;
+            h = this.svg.height()/2;
+            x = 0;
+            if (qInfo[0] > 0)
+                x = w;
+            y = 0
+            if (qInfo[1] > 0)
+                y = h;
+
+            this.svg.rect(w, h).move(x,y).fill(cssColour);
         }
     }
     
@@ -376,6 +392,25 @@ class CVIRender {
             this.ctx.fillText(title, xLoc, yLoc);
             this.ctx.font = "16px Arial";
             this.ctx.fillText("[" + qInfo['core-value'] + "]", xLoc, yLoc + 20);
+            
+            /* svg-js */
+            this.svg.text(title)
+                .move(xLoc, yLoc-10)
+                .fill('black')
+                .font( {
+                    family: 'Arial',
+                    size: '20px',
+                    anchor: 'middle'
+                });
+
+            this.svg.text("[" + qInfo['core-value'] + "]")
+                .move(xLoc, yLoc+10)
+                .fill('black')
+                .font( {
+                    family: 'Arial',
+                    size: '16px',
+                    anchor: 'middle'
+                });
         }
     }
     
@@ -388,6 +423,11 @@ class CVIRender {
             this.ctx.fillStyle = 'black';
             this.ctx.closePath();
             this.ctx.fill();
+            
+            /* svg */
+            this.svg.circle(4)
+                .move(pt.x()-2, pt.y()-2)
+                .fill('black');
         }
     }
     
@@ -416,6 +456,29 @@ class CVIRender {
         this.ctx.closePath();
         this.ctx.fill();
         
+        /* SVG */
+        var gradient = this.svg.gradient('linear', function(stop) {
+            stop.at(0, qInfo['fill-colour'][1])
+            stop.at(1, qInfo['fill-colour'][0])
+        });
+        
+        /* set the gradient direction based on the quadrant */
+        if (qInfo['quadrant'][0] > 0 && qInfo['quadrant'][1] > 0)
+            gradient.from(0,0).to(1,1);
+        else if (qInfo['quadrant'][0] > 0 && qInfo['quadrant'][1] < 0)
+            gradient.from(0,1).to(1,0);
+        else if (qInfo['quadrant'][0] < 0 && qInfo['quadrant'][1] > 0)
+            gradient.from(1,0).to(0,1);
+        else  //(qInfo['quadrant'][0] < 0 && qInfo['quadrant'][1] < 0)
+            gradient.from(1,1).to(0,0);
+        
+        var pgPts = [ [this.svg.width()/2, this.svg.height()/2] ];
+        for (pi in qInfo['points']) {
+            pt = qInfo['points'][pi];
+            pgPts.push( [pt.x(), pt.y()] );
+        }
+        this.svg.polygon(pgPts).fill(gradient);
+        
         if (drawBorder) {
             this.ctx.beginPath();
             console.log("Points: %s", qInfo['points'].length);
@@ -438,7 +501,19 @@ class CVIRender {
             this.ctx.moveTo(qInfo['points'][1].x(), qInfo['points'][1].y());
             this.ctx.lineTo(qInfo['points'][2].x(), qInfo['points'][2].y());
             this.ctx.closePath();
-            this.ctx.stroke();   
+            this.ctx.stroke();
+            
+            /* svg */
+            this.svg.line(
+                qInfo['points'][0].x(), qInfo['points'][0].y(),
+                qInfo['points'][1].x(), qInfo['points'][1].y()
+            ).stroke({ width: 3, color: '#afafaf' });
+
+            this.svg.line(
+                qInfo['points'][1].x(), qInfo['points'][1].y(),
+                qInfo['points'][2].x(), qInfo['points'][2].y()
+            ).stroke({ width: 3, color: '#afafaf' });
+
         }
     }
 
@@ -506,6 +581,8 @@ class CVIRender {
         
         /* draw the white coordinate lines */
         this.renderCoordinateLines();
+        
+        //console.log("SVG: " + this.svg.svg());
     }
 
     /*
@@ -526,6 +603,16 @@ class CVIRender {
         ctx.lineTo(c.width, c.height / 2);
         ctx.stroke();
 
+        /* svg */
+        this.svg.line(
+            this.svg.width()/2, 0,
+            this.svg.width()/2, this.svg.height()
+        ).stroke({ width: 6, color: 'white' });
+
+        this.svg.line(
+            0, this.svg.height()/2,
+            this.svg.width(), this.svg.height()/2
+        ).stroke({ width: 6, color: 'white' });
     }
 }
 /* statics */
@@ -535,7 +622,6 @@ CVIRender.quadrantBackgroundColour = '#E6E6E6';
  * Entry point for html to call
  */
 function cvi(name) {
-    "use strict";
     
     /* this data will be pulled from somewhere */
     var cviMark = new CVIProfile('Mark Nicholson', 21, 29, 8, 14);
@@ -567,7 +653,7 @@ function cviTool(name, folks) {
 
     /* create the profiles */
     var profiles = [];
-    for (f in folks) {
+    for (var f in folks) {
         console.log(folks[f]);
         var p = new CVIProfile(folks[f][0],
                                folks[f][1],
@@ -616,6 +702,3 @@ function cvi_test() {
     console.log("con_var: " + t.cons_var);
     console.log("staticProp: " + Tester.myStaticProperty);
 }
-
-/*}()
-);*/
