@@ -1,6 +1,6 @@
 <html>
     <head>
-        <link rel="stylesheet" type="text/css" href="cvi_tools.css"></link>
+        <link rel="stylesheet" type="text/css" href="cvi-tools.css"></link>
         <meta charset="UTF-8">
     </head>
 
@@ -91,7 +91,7 @@ function loadTestData() {
         __addTableRow(items[i]);
     }
 }
-window.onload = loadTestData;
+//window.onload = loadTestData;
     
     
 function fileUpload() {
@@ -135,6 +135,8 @@ function delAllRows() {
     for (var r = table.rows.length-1; r >= 0; r--) {
         table.deleteRow(r);
     }
+    /* update the drawing in case we nuked a profile */
+    tableScan();
 }
 
 function delRow(rowId) {
@@ -147,6 +149,9 @@ function delRow(rowId) {
     var row = document.getElementById(rowId);
     console.log("  idx: " + row.rowIndex);
     table.deleteRow( row.rowIndex - 1 );
+    
+    /* update the drawing in case we nuked a profile */
+    tableScan();
 }
     
 function addTableRow() {
@@ -263,7 +268,7 @@ function tableScan() {
 }
 
 </script>
-<script type="text/javascript" src="FileSaver.min.js"></script>
-<script type="text/javascript" src="cvi_tools.js"></script>
+<script type="text/javascript" src="node_modules/file-saver/FileSaver.min.js"></script>
+<script type="text/javascript" src="cvi-tools.js"></script>
 
 </html>

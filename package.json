@@ -2,10 +2,10 @@
   "name": "cvi-tools",
   "version": "0.9.0",
   "description": "An HTML5 utility to display and compare Core-Value-Index profiles",
-  "main": "cvi_tools.js",
+  "main": "cvi-tools.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
-    "build": "nodejs node_modules/uglify-js-harmony/bin/uglifyjs cvi_tools.js --mangle --comments /@source/ > cvi-tools.min.js"
+    "build": "nodejs node_modules/uglify-js-harmony/bin/uglifyjs cvi-tools.js --mangle --comments /@source/ > cvi-tools.min.js"
   },
   "repository": {
     "type": "git",
