@@ -1,0 +1,51 @@
+<html>
+<body>
+    <h2>Help for CVI Tool</h2>
+    <p>
+        Basically, the table on the left is where you put the people profiles.  On the right, you'll see the profile diagram (once one is drawn).
+    </p>
+
+    <div style="align:middle">
+    <img src="images/cvi-tool-table.png">
+    <img src="images/cvi-diagram.svg" width="400">
+    </div>
+    
+    <h3>Adding a Profile</h3>
+    <p>
+        You can add a profile directly. In the 5 boxes at the bottom of the table, enter the relative information based on the column.   Then click the <button>+</button> button on the left end of the same row.  That will add your new person to the table.
+    </p>
+
+    <p>Repeat as desired.</p>
+    
+    <h3>Removing a Profile</h3>
+    <p>
+        If you've accidentally added a profile incorrectly, you can click on the <button>&times;</button> on the right-end of that row to remove it.
+    </p>
+    
+    <h3>Exporting Profile Data</h3>
+    <p>
+        To save you some typing, if you click the <button>Export</button> button, it will prompt you to save a file which is the table data in a convenient format (... for the tool, not you)
+    </p>
+
+    <h3>Importing Profile Data</h3>
+    <p>
+        You can re-load the exported data by using the <button>Choose File</button> button and selecting the saved file.
+        The file format is a JSON array of arrays.
+    </p>
+
+    <h3>Display a Profile</h3>
+    <p>
+        Now, to display a single person's profile, click on the little grey check-box (<input type="checkbox">)  to the left of the name in the table.  You should see the "diagram" of the CVI profile appear on the right (or possibly below if your browser window is small)
+    </p>
+
+    <h3>Group Profile</h3>
+    <p>
+        If you click on additional people's checkboxes, the tool will "overlay" each CVI profile on the same drawing.  You will see an internal "profile" with a grey box inset on the diagram.  This is the "group average" profile --  so you can see if your group is decently balanced.  (Ideally it should be square, centered on the middle of the box)
+    </p>
+
+    <h3>Save The Diagram</h3>
+    <p>
+        Lastly, if you want to save the drawn diagram, select the type of image you'd like to create in the drop-down menu <select><option value=SVG>SVG</select> on the bottom-right of the table The default format SVG (scalable vector graphics) and can also export PNG and JPEG.  Once you select the format, click on <button>Save Image</button> and you'll download the file.
+    </p>
+</body>
+</html>
