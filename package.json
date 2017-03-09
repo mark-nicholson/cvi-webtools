@@ -5,7 +5,7 @@
   "main": "cvi-tools.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
-    "build": "nodejs node_modules/uglify-js-harmony/bin/uglifyjs cvi-tools.js --mangle --comments /@source/ > cvi-tools.min.js"
+    "build": "nodejs node_modules/uglify-js-harmony/bin/uglifyjs cvi-tools.js --mangle --comments /@source/ > cvi-tools.min.js; nodejs node_modules/uglify-js-harmony/bin/uglifyjs cvi-table.js --mangle --comments /@source/ > cvi-table.min.js"
   },
   "repository": {
     "type": "git",
