@@ -31,20 +31,30 @@
                         <td></td>
                         </tr>
                     <tr>
-                        <td id="fileLoadCellId" colspan="5">
+                        <td id="fileLoadCellId" colspan="3">
                             <input type="file" id="uploadFile" name="dataFile" size="40" onchange="fileUpload()"></input>
                         </td>
-                        <td colspan="2">
-                            <button id="exportInfo" onclick="exportInfo()">Export</button>
+                        <td colspan="1">
+                            <button id="exportInfo" onclick="exportInfo()">
+                                Export
+                            </button>
+                        </td>
+                        <td colspan="3">
+                            <button id="exportImage" onclick="exportImage()">
+                                Save Image
+                            </button>
+                            <select id="imageFormat">
+                                <option value="SVG">SVG</option>
+                                <option value="PNG">PNG</option>
+                                <option value="JPG">JPG</option>
+                            </select>
                         </td>
                     </tr>
                     </tfoot>
                 </table>
             </div>
-            <div class="cvi-canvas" style="float: right">
-                <canvas class="cvi-canvas" id="cviCanvas"  width="700" height="700" ></canvas>    
-            </div>
-            <div id="cviSVG" width="700" height="700"></div>
+            <div id="svgDivID" style="float: right" width="700" height="700"></div>
+            <canvas id="canvas" style="display: none"></canvas>
         </div>
     </div>
 </body>

@@ -1,3 +1,7 @@
+/*
+ * Support to manage the dynamic table for the CVI profiles
+ */
+
 function getTable() {
     return document.getElementById("cviTable");
 }
@@ -27,9 +31,82 @@ function exportInfo() {
         eData.push(profile);
     }
 
-    blob = new Blob( [ JSON.stringify(eData) ],
-                         { type: "application/json;charset=utf-8"});
+    blob = new Blob(
+        [ JSON.stringify(eData) ],
+        { type: "application/json;charset=utf-8"}
+    );
     saveAs(blob, "cvi-data.js");
+}
+
+
+function triggerDownload (imgURI, fname) {
+  var evt = new MouseEvent('click', {
+    view: window,
+    bubbles: false,
+    cancelable: true
+  });
+
+  var a = document.createElement('a');
+  a.setAttribute('download', fname);
+  a.setAttribute('href', imgURI);
+  a.setAttribute('target', '_blank');
+
+  a.dispatchEvent(evt);
+}
+
+function exportImage() {
+    if (!cviRender) {
+        alert("No image has been rendered.")
+        return;
+    }
+    
+    var imageFormat = document.getElementById('imageFormat').value;
+    
+    if (imageFormat == 'SVG') {
+        var blob = new Blob(
+            [ cviRender.svg.svg() ],
+            {type: 'image/svg+xml;charset=utf-8'}
+        );
+        saveAs(blob, 'cvi-image.svg');
+    }
+    else if (imageFormat == 'PNG' || imageFormat == 'JPG') {
+        var canvas = document.getElementById('canvas');
+        canvas.width = cviRender.svg.width();
+        canvas.height = cviRender.svg.height();
+        var ctx = canvas.getContext('2d');
+        var data = cviRender.svg.svg();
+        var DOMURL = window.URL || window.webkitURL || window;
+
+        var img = new Image();
+        var svgBlob = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+        var url = DOMURL.createObjectURL(svgBlob);
+        var mimeType = 'image/png';
+        var fname = 'cvi-image';
+        if (imageFormat == 'JPG') {
+            mimeType = 'image/jpeg';
+            fname = fname + '.jpg';
+        }
+        else if (imageFormat == 'PNG') {
+            mimeType = 'image/png';
+            fname = fname + '.png';
+        }
+
+        img.onload = function () {
+            ctx.drawImage(img, 0, 0);
+            DOMURL.revokeObjectURL(url);
+
+            var imgURI = canvas
+                .toDataURL(mimeType)
+                .replace(mimeType, 'image/octet-stream');
+
+            triggerDownload(imgURI, fname);
+        };
+
+        img.src = url;
+    }
+    else {
+        alert("Unknown Image Format.");
+    }
 }
 
 function loadTestData() {
@@ -42,6 +119,7 @@ function loadTestData() {
         __addTableRow(items[i]);
     }
 }
+
 /* for debug */
 //window.onload = loadTestData;
     
@@ -98,7 +176,6 @@ function delRow(rowId) {
     
 function addTableRow() {
     var i, box, plural;
-    /* make sure there is data to add */
     var items = [];
     var missing = [];
     var tags = [
@@ -132,8 +209,6 @@ function addTableRow() {
         box = document.getElementById(tags[i]);
         box.value = '';
     }
-   
-
 }
 
 var rowID = 3333;
@@ -181,7 +256,7 @@ function tableScan() {
     var folks = [];
     var table = document.getElementById("cviTable");
     var groupName = "Meeting";
-    var n, r, c, m, profile, ctx, canvas;
+    var n, r, c, m, profile, svgDiv;
     
     for (r = 1, n = table.rows.length; r < n; r++) {
         profile = [];
@@ -205,8 +280,8 @@ function tableScan() {
         cviTool(groupName, folks);
     }
     else {
-        canvas = document.getElementById("cviCanvas");
-        ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        svgDiv = document.getElementById('svgDivID');
+        while (svgDiv.childElementCount > 0)
+            svgDiv.removeChild(svgDiv.firstChild);
     }
 }

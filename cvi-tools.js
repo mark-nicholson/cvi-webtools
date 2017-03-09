@@ -210,10 +210,10 @@ class CVIGroupProfile extends CVIProfile {
         
         /* average them out */
         super(name,
-                          mer / profileList.length,
-                          inn / profileList.length,
-                          ban / profileList.length,
-                          bui / profileList.length);
+              mer / profileList.length,
+              inn / profileList.length,
+              ban / profileList.length,
+              bui / profileList.length);
         
         /* remember the individual profiles */
         this.profiles = profileList;        
@@ -227,25 +227,21 @@ class CVIGroupProfile extends CVIProfile {
  */
 class CVIRender {
 
-    constructor(canvasID) {
-        this.canvasID = canvasID;
-        this.canvas = document.getElementById("cviCanvas");
-        this.ctx = this.canvas.getContext("2d");
-        
-        var svgDiv = document.getElementById('cviSVG');
+    constructor(svgDivID) {
+        this.svgDivID = svgDivID;
+
+        /* clear out any previous renders */
+        var svgDiv = document.getElementById(svgDivID);
         while (svgDiv.childElementCount > 0)
             svgDiv.removeChild(svgDiv.firstChild);
         
-        this.svg = SVG('cviSVG').size(700, 700);
+        /* create a new playground */
+        this.svg = SVG(svgDivID).size(700, 700);
 
-        /* have everyone understand the same size */
-        this.ctx.width = this.canvas.width;
-        this.ctx.height = this.canvas.height;
-    
         /* set the general params */
-        this.scale = this.canvas.width / 2 / CVIProfile.maxScore;
+        this.scale = this.svg.width() / 2 / CVIProfile.maxScore;
         this.origin = new Point(
-            this.canvas.width / 2, this.canvas.height / 2);
+            this.svg.width() / 2, this.svg.height() / 2);
     }
 
     merchantQuadrantInfo() {
@@ -254,7 +250,10 @@ class CVIRender {
             'points': [],
             'title': "Merchant",
             'core-value': "Love",
-            'fill-colour': [ '#345AA3', '#D5DDEC' ],
+            'fill-colour': [
+                CVIRender.merchantLightColour,
+                CVIRender.merchantDarkColour
+            ],
             'title-location': [ 0.9, 0.05 ]
         }
     }
@@ -265,7 +264,10 @@ class CVIRender {
             'points': [],
             'title': "Innovator",
             'core-value': "Wisdom",
-            'fill-colour': [ '#D55EEA', '#F6DCFB' ],
+            'fill-colour': [
+                CVIRender.innovatorLightColour,
+                CVIRender.innovatorDarkColour                
+            ],
             'title-location': [ 0.9, 0.95 ]
         }
     }
@@ -276,7 +278,10 @@ class CVIRender {
             'points': [],
             'title': "Banker",
             'core-value': "Knowledge",
-            'fill-colour': [ '#32842D', '#C1DCBF' ],
+            'fill-colour': [
+                CVIRender.bankerLightColour,
+                CVIRender.bankerDarkColour
+            ],
             'title-location': [ 0.1, 0.95 ]
         }
     }
@@ -287,7 +292,10 @@ class CVIRender {
             'points': [],
             'title': "Builder",
             'core-value': "Power",
-            'fill-colour': [ '#F03230', '#FBC9C8' ],
+            'fill-colour': [
+                CVIRender.builderLightColour,
+                CVIRender.builderDarkColour
+            ],
             'title-location': [ 0.1, 0.05 ]
         }
 
@@ -297,7 +305,7 @@ class CVIRender {
      * setup the quadrants structure
      */
     _get_quadrants(cviProfile) {
-
+        var qi, pi, pts;
         var quads = [
             this.merchantQuadrantInfo(),
             this.innovatorQuadrantInfo(),
@@ -315,9 +323,9 @@ class CVIRender {
         quads[3].points = cviProfile.builderPoints();
 
         /* translate the points */
-        for (var qi in quads) {
-            var pts = quads[qi].points;
-            for (var pi in pts) {
+        for (qi in quads) {
+            pts = quads[qi].points;
+            for (pi in pts) {
                 pts[pi].setOrigin(this.origin.x(), this.origin.y());
                 pts[pi].setScale(this.scale);
             }
@@ -330,26 +338,13 @@ class CVIRender {
      * Create the background squares for each quadrant.
      */
     renderQuandrantBackgrounds() {
-        var qi, qInfo;
-        //var cssColour = 'cviCanvas.quadrant-background-colour';
+        var qi, qInfo, x, y, w, h;
         var cssColour = CVIRender.quadrantBackgroundColour;
         var quads = this._get_quadrants(null);
         
         for (qi in quads) {
             qInfo = quads[qi].quadrant;
             
-            this.ctx.beginPath();
-            this.ctx.rect(
-                this.canvas.width/2  + 3*qInfo[0],
-                this.canvas.height/2 + 3*qInfo[1],
-                this.canvas.width/2  * qInfo[0],
-                this.canvas.height/2 * qInfo[1]);
-            this.ctx.fillStyle = cssColour;
-            this.ctx.closePath();
-            this.ctx.fill();
-
-            /* svg */
-            var x, y, w, h;
             w = this.svg.width()/2;
             h = this.svg.height()/2;
             x = 0;
@@ -382,18 +377,10 @@ class CVIRender {
                 title += cviProfile[att];
             else
                 title += cviProfile[att].toFixed(2);
-            xLoc = this.canvas.width * qInfo['title-location'][0];
-            yLoc = this.canvas.height * qInfo['title-location'][1];
+            xLoc = this.svg.width() * qInfo['title-location'][0];
+            yLoc = this.svg.height() * qInfo['title-location'][1];
             
             /* configure the action */
-            this.ctx.font = "20px Arial";
-            this.ctx.fillStyle = "black";
-            this.ctx.textAlign = "center";
-            this.ctx.fillText(title, xLoc, yLoc);
-            this.ctx.font = "16px Arial";
-            this.ctx.fillText("[" + qInfo['core-value'] + "]", xLoc, yLoc + 20);
-            
-            /* svg-js */
             this.svg.text(title)
                 .move(xLoc, yLoc-10)
                 .fill('black')
@@ -418,13 +405,6 @@ class CVIRender {
         var pi, pt;
         for (pi in pList) {
             pt = pList[pi];
-            this.ctx.beginPath();
-            this.ctx.arc(pt.x(), pt.y(), 2, 0, 2 * Math.PI, false);
-            this.ctx.fillStyle = 'black';
-            this.ctx.closePath();
-            this.ctx.fill();
-            
-            /* svg */
             this.svg.circle(4)
                 .move(pt.x()-2, pt.y()-2)
                 .fill('black');
@@ -436,30 +416,11 @@ class CVIRender {
      */
     renderPolygon(qInfo, drawBorder) {
         var gradient, pi, pt;
-
-        /* configure gradient */
-        gradient = this.ctx.createLinearGradient(this.origin.x(),
-                                                 this.origin.y(), 
-                                                 qInfo['points'][1].x(),
-                                                 qInfo['points'][1].y());
-        gradient.addColorStop(0, qInfo['fill-colour'][1]);
-        gradient.addColorStop(1, qInfo['fill-colour'][0]);
-
-        /* add lines to form the polygon for each profile */
-        this.ctx.beginPath();
-        this.ctx.fillStyle = gradient;
-        this.ctx.moveTo(this.origin.x(), this.origin.y());
-        for (pi in qInfo['points']) {
-            pt = qInfo['points'][pi];
-            this.ctx.lineTo(pt.x(), pt.y());
-        }
-        this.ctx.closePath();
-        this.ctx.fill();
         
-        /* SVG */
-        var gradient = this.svg.gradient('linear', function(stop) {
-            stop.at(0, qInfo['fill-colour'][1])
-            stop.at(1, qInfo['fill-colour'][0])
+        /* cook up the gradient */
+        gradient = this.svg.gradient('linear', function(stop) {
+            stop.at(0, qInfo['fill-colour'][0])
+            stop.at(1, qInfo['fill-colour'][1])
         });
         
         /* set the gradient direction based on the quadrant */
@@ -480,39 +441,15 @@ class CVIRender {
         this.svg.polygon(pgPts).fill(gradient);
         
         if (drawBorder) {
-            this.ctx.beginPath();
-            console.log("Points: %s", qInfo['points'].length);
-            console.log("Border: [%s,%s] -> [%s,%s]",
-                       qInfo['points'][0].x(), qInfo['points'][0].y(),
-                       qInfo['points'][1].x(), qInfo['points'][1].y());
-            this.ctx.moveTo(qInfo['points'][0].x(), qInfo['points'][0].y());
-            this.ctx.lineTo(qInfo['points'][1].x(), qInfo['points'][1].y());
-            this.ctx.lineWidth = 3;
-            this.ctx.strokeStyle = '#afafaf';
-            this.ctx.closePath();
-            this.ctx.stroke();
-
-            console.log("Border: [%s,%s] -> [%s,%s]",
-                       qInfo['points'][1].x(), qInfo['points'][1].y(),
-                       qInfo['points'][2].x(), qInfo['points'][2].y());
-            this.ctx.beginPath();
-            this.ctx.lineWidth = 3;
-            this.ctx.strokeStyle = '#afafaf';
-            this.ctx.moveTo(qInfo['points'][1].x(), qInfo['points'][1].y());
-            this.ctx.lineTo(qInfo['points'][2].x(), qInfo['points'][2].y());
-            this.ctx.closePath();
-            this.ctx.stroke();
-            
-            /* svg */
             this.svg.line(
                 qInfo['points'][0].x(), qInfo['points'][0].y(),
                 qInfo['points'][1].x(), qInfo['points'][1].y()
-            ).stroke({ width: 3, color: '#afafaf' });
+            ).stroke({ width: 3, color: CVIRender.borderColour });
 
             this.svg.line(
                 qInfo['points'][1].x(), qInfo['points'][1].y(),
                 qInfo['points'][2].x(), qInfo['points'][2].y()
-            ).stroke({ width: 3, color: '#afafaf' });
+            ).stroke({ width: 3, color: CVIRender.borderColour });
 
         }
     }
@@ -581,29 +518,12 @@ class CVIRender {
         
         /* draw the white coordinate lines */
         this.renderCoordinateLines();
-        
-        //console.log("SVG: " + this.svg.svg());
     }
 
     /*
     * draw coordinate lines
     */
     renderCoordinateLines() {
-        var ctx = this.ctx;
-        var c = this.canvas;
-
-        ctx.beginPath()
-        ctx.moveTo(c.width / 2, 0);
-        ctx.lineTo(c.width / 2, c.height);
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = 'white';
-        ctx.stroke();
-
-        ctx.moveTo(0, c.height / 2);
-        ctx.lineTo(c.width, c.height / 2);
-        ctx.stroke();
-
-        /* svg */
         this.svg.line(
             this.svg.width()/2, 0,
             this.svg.width()/2, this.svg.height()
@@ -617,6 +537,15 @@ class CVIRender {
 }
 /* statics */
 CVIRender.quadrantBackgroundColour = '#E6E6E6';
+CVIRender.merchantLightColour = '#D5DDEC';
+CVIRender.merchantDarkColour = '#345AA3';
+CVIRender.innovatorLightColour = '#F6DCFB';
+CVIRender.innovatorDarkColour = '#D55EEA';
+CVIRender.bankerLightColour = '#C1DCBF';
+CVIRender.bankerDarkColour = '#32842D';
+CVIRender.builderLightColour = '#FBC9C8';
+CVIRender.builderDarkColour = '#F03230';
+CVIRender.borderColour = '#afafaf';
 
 /*
  * Entry point for html to call
@@ -644,12 +573,15 @@ function cvi(name) {
     return;
 }
 
+/* global instance of renderer */
+var cviRender = null;
+
 function cviTool(name, folks) {
     if (!folks || folks.length == 0)
         return;
 
     /* setup the renderer */
-    var cviRender = new CVIRender("cviCanvas");
+    cviRender = new CVIRender("svgDivID");
 
     /* create the profiles */
     var profiles = [];
