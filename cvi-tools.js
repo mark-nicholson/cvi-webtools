@@ -75,11 +75,20 @@ class Line {
         }
         this.p1 = p1;
         this.p2 = p2;
-        this.m = (this.p2.y() - this.p1.y()) / (this.p2.x() - this.p1.x());
-        this.b = this.p2.y() - this.m * this.p2.x();
         
-        this.x_intercept = new Point(-this.b / this.m, 0);
-        this.y_intercept = new Point(0, this.m * 0 + this.b);
+        /* catch infinite slope! */
+        if ((this.p2.x() - this.p1.x()) == 0) {
+            this.x_intercept = new Point(this.p1.x(), 0);
+            this.y_intercept = new Point(0, NaN);
+        }
+        else {
+            this.m = (this.p2.y() - this.p1.y()) / (this.p2.x() - this.p1.x());
+            this.b = this.p2.y() - this.m * this.p2.x();
+
+            this.x_intercept = new Point(-this.b / this.m, 0);
+            this.y_intercept = new Point(0, this.m * 0 + this.b);
+        }
+        
     }
     
     toString() {
@@ -103,12 +112,12 @@ class Line {
 }
 
 class CVIProfile {
-    constructor(name, merchant, innovator, banker, builder) {
+    constructor(name, builder, merchant, innovator, banker) {
         this.name = name;
+        this.builder = builder;
         this.merchant = merchant;
         this.innovator = innovator;
         this.banker = banker;
-        this.builder = builder;
         
         /* meta values */
         this.intuitiveType = this.builder + this.merchant;
@@ -119,19 +128,24 @@ class CVIProfile {
         this.cognitiveType = this.innovator + this.banker;
     }
     
+    toString() {
+        return "CVI[{0}: {1}, {2}, {3}, {4} ]".format(
+            this.name, this.builder, this.merchant, this.innovator, this.banker)
+    }
+    
     /*
      * Provide a Point instanrce for each attribute
      */
+    builderPoint() {
+        return new Point(-this.builder, -this.builder);
+    }
+
     merchantPoint() {
         return new Point(this.merchant, -this.merchant);
     }
 
     innovatorPoint() {
         return new Point(this.innovator, this.innovator);
-    }
-
-    builderPoint() {
-        return new Point(-this.builder, -this.builder);
     }
 
     bankerPoint() {
@@ -141,25 +155,33 @@ class CVIProfile {
     /*
      * Provide a Line instance for the relevant relations
      */
-    merchantBuilderLine() {
-        return new Line(this.merchantPoint(), this.builderPoint());
-    }
-    
     builderBankerLine() {
         return new Line(this.builderPoint(), this.bankerPoint());
     }
 
-    bankerInnovatorLine() {
-        return new Line(this.bankerPoint(), this.innovatorPoint());
+    merchantBuilderLine() {
+        return new Line(this.merchantPoint(), this.builderPoint());
     }
     
     innovatorMerchantLine() {
         return new Line(this.innovatorPoint(), this.merchantPoint());
     }
     
+    bankerInnovatorLine() {
+        return new Line(this.bankerPoint(), this.innovatorPoint());
+    }
+    
     /*
      * Sets of points which describe each quadrant
      */
+    builderPoints() {
+        return [
+            this.merchantBuilderLine().yIntercept(),
+            this.builderPoint(),
+            this.builderBankerLine().xIntercept()
+        ];
+    }
+
     merchantPoints() {
         return [
             this.merchantBuilderLine().yIntercept(),
@@ -173,14 +195,6 @@ class CVIProfile {
             this.innovatorMerchantLine().xIntercept(),
             this.innovatorPoint(),
             this.bankerInnovatorLine().yIntercept()
-        ];
-    }
-
-    builderPoints() {
-        return [
-            this.merchantBuilderLine().yIntercept(),
-            this.builderPoint(),
-            this.builderBankerLine().xIntercept()
         ];
     }
 
@@ -202,18 +216,18 @@ class CVIGroupProfile extends CVIProfile {
         /* aggregate the values */
         for (i in profileList) {
             var p = profileList[i];
+            bui += p.builder;
             mer += p.merchant;
             inn += p.innovator;
             ban += p.banker;
-            bui += p.builder;
         }
         
         /* average them out */
         super(name,
+              bui / profileList.length,
               mer / profileList.length,
               inn / profileList.length,
-              ban / profileList.length,
-              bui / profileList.length);
+              ban / profileList.length);
         
         /* remember the individual profiles */
         this.profiles = profileList;        
@@ -307,20 +321,20 @@ class CVIRender {
     _get_quadrants(cviProfile) {
         var qi, pi, pts;
         var quads = [
+            this.builderQuadrantInfo(),
             this.merchantQuadrantInfo(),
             this.innovatorQuadrantInfo(),
-            this.bankerQuadrantInfo(),
-            this.builderQuadrantInfo()
+            this.bankerQuadrantInfo()
         ];
 
         /* add the reference points */
         if (!cviProfile)
             return quads;
         
-        quads[0].points = cviProfile.merchantPoints();
-        quads[1].points = cviProfile.innovatorPoints();
-        quads[2].points = cviProfile.bankerPoints();
-        quads[3].points = cviProfile.builderPoints();
+        quads[0].points = cviProfile.builderPoints();
+        quads[1].points = cviProfile.merchantPoints();
+        quads[2].points = cviProfile.innovatorPoints();
+        quads[3].points = cviProfile.bankerPoints();
 
         /* translate the points */
         for (qi in quads) {
@@ -466,7 +480,7 @@ class CVIRender {
         
         /* identify the input */
         if (data instanceof CVIGroupProfile) {
-            console.log("Is a CVIGroupProfile");
+            console.log("Render(): Is a CVIGroupProfile");
             profiles = [];
             for (pi in data.profiles)
                 profiles.push(data.profiles[pi]);
@@ -474,12 +488,13 @@ class CVIRender {
             cviProfile = data;
         }
         else if (data instanceof CVIProfile) {
-            console.log("Is a CVIProfile");
+            console.log("Render(): Is a CVIProfile");
             profiles = [ ];
             cviProfile = data;
         }
         else {
             /* should be a list */
+            console.log("Render(): received list")
             cviProfile = data.shift();
             profiles = data;
         }
@@ -553,8 +568,8 @@ CVIRender.borderColour = '#afafaf';
 function cvi(name) {
     
     /* this data will be pulled from somewhere */
-    var cviMark = new CVIProfile('Mark Nicholson', 21, 29, 8, 14);
-    var cviKaren = new CVIProfile('Karen Nicholson', 29, 14, 13, 16);
+    var cviMark = new CVIProfile('Mark Nicholson', 14, 21, 29, 8);
+    var cviKaren = new CVIProfile('Karen Nicholson', 16, 29, 14, 13);
     var cviGroup = new CVIGroupProfile('Nicholsons',
                                        [cviMark, cviKaren]);
     var cviProfile;
@@ -593,7 +608,6 @@ function cviTool(name, folks) {
                                folks[f][3],
                                folks[f][4]);
         profiles.push(p);
-        console.log("Profile: %s", p.toString());
     }
     
     /* render the single one */
@@ -602,7 +616,7 @@ function cviTool(name, folks) {
         return;
     }
     
-    console.log("%s: %s", name, profiles);
+    /* render the group */
     var group = new CVIGroupProfile(name, profiles);
     cviRender.render( group );
 }

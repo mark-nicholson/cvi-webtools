@@ -35,7 +35,7 @@ function exportInfo() {
         [ JSON.stringify(eData) ],
         { type: "application/json;charset=utf-8"}
     );
-    saveAs(blob, "cvi-data.js");
+    saveAs(blob, "cvi-data.json");
 }
 
 
@@ -111,8 +111,8 @@ function exportImage() {
 
 function loadTestData() {
     var items = [
-        ['Mark Nicholson T', 21, 29, 8, 14],
-        ['Karen Nicholson T', 29, 14, 13, 16]
+        ['Mark Nicholson T', 14, 21, 29, 8],
+        ['Karen Nicholson T', 16, 29, 14, 13]
     ];
     
     for (var i in items) {
@@ -175,12 +175,13 @@ function delRow(rowId) {
 }
     
 function addTableRow() {
+    console.log("addTableRow()");
     var i, box, plural;
     var items = [];
     var missing = [];
     var tags = [
-        "newName", "newMerchant",
-        "newInnovator", "newBanker", "newBuilder"
+        "newName", "newBuilder", "newMerchant",
+        "newInnovator", "newBanker"
     ];
     
     for (i in tags) {
@@ -202,6 +203,7 @@ function addTableRow() {
     }
     
     /* install the row */
+    console.log("Params" + items.toString());
     __addTableRow(items);
     
     /* clear out the adder fields */
@@ -266,8 +268,8 @@ function tableScan() {
         /* pass on name */
         profile.push(table.rows[r].cells[1].innerHTML);
 
-        /* convert "13" into its INT form */
-        for (c = 2, m = table.rows[r].cells.length; c < m; c++) {
+        /* convert "13" into its INT form -- count off 4 cells, starting at 2 */
+        for (c=2, m=4; m > 0; c++, m--) {
             profile.push(parseInt(table.rows[r].cells[c].innerHTML));
         }
         
