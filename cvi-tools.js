@@ -118,14 +118,26 @@ class CVIProfile {
         this.merchant = merchant;
         this.innovator = innovator;
         this.banker = banker;
-        
-        /* meta values */
-        this.intuitiveType = this.builder + this.merchant;
-        this.independentType = this.builder + this.innovator;
-        this.practicalType = this.builder + this.banker;
-        this.creativeType = this.merchant + this.innovator;
-        this.communityType = this.merchant + this.banker;
-        this.cognitiveType = this.innovator + this.banker;
+    }
+    
+    /* meta values */
+    intuitiveType() {
+        return this.builder + this.merchant;
+    }
+    independentType(){
+        return this.builder + this.innovator;
+    }
+    practicalType() {
+        return this.builder + this.banker;
+    }
+    creativeType() {
+        return this.merchant + this.innovator;
+    }
+    communityType() {
+        return this.merchant + this.banker;
+    }
+    cognitiveType() {
+        return this.innovator + this.banker;
     }
     
     toString() {
@@ -210,28 +222,78 @@ class CVIProfile {
 CVIProfile.maxScore = 30;
 
 class CVIGroupProfile extends CVIProfile {
-    constructor(name, profileList) {
-        var i, inn=0, mer=0, ban=0, bui=0;
-
-        /* aggregate the values */
-        for (i in profileList) {
-            var p = profileList[i];
-            bui += p.builder;
-            mer += p.merchant;
-            inn += p.innovator;
-            ban += p.banker;
-        }
-        
-        /* average them out */
-        super(name,
-              bui / profileList.length,
-              mer / profileList.length,
-              inn / profileList.length,
-              ban / profileList.length);
+    constructor(name, profiles) {        
+        /* go through the motions... */
+        super(name, 0, 0, 0, 0);
         
         /* remember the individual profiles */
-        this.profiles = profileList;        
+        this.profiles = profiles;
+        this._update();
     }
+    
+    /* recalculate the group profile parameters */
+    _update() {
+        var i, pr, inn=0, mer=0, ban=0, bui=0;
+
+        for (i in this.profiles) {
+            pr = this.profiles[i];
+            bui += pr.builder;
+            mer += pr.merchant;
+            inn += pr.innovator;
+            ban += pr.banker;
+        }
+        
+        /* update the average */
+        if (this.profiles.length > 0) {
+            this.builder = bui / this.profiles.length;
+            this.merchant = mer / this.profiles.length;
+            this.innovator = inn / this.profiles.length;
+            this.banker = ban / this.profiles.length;
+        }
+        else {
+            this.builder = 0;
+            this.merchant = 0
+            this.innovator = 0;
+            this.banker = 0;
+        }
+    }
+    
+    addProfile(p) {
+        var i;
+        
+        /* dupe check */
+        for (i in this.profiles) {
+            if (p.name == this.profiles[i].name) {
+                console.log("addProfile(): found duplicate of '" + p.name + "'.");
+                return false;
+            }
+        }
+        
+        /* incorporate it */
+        this.profiles.push(p);
+
+        /* aggregate the values */
+        this._update();
+        
+        return true;
+    }
+    
+    removeProfile(p) {
+        var i;
+        
+        /* find it... */
+        for (i in this.profiles) {
+            if (p.name == this.profiles[i].name) {
+                console.log("removeProfile(): found '" + p.name + "'. Removing it.");
+                this.profiles.splice(i, 1);
+                break;
+            }
+        }
+
+        /* aggregate the values */
+        this._update();        
+    }
+
 }
 
 
@@ -245,9 +307,7 @@ class CVIRender {
         this.svgDivID = svgDivID;
 
         /* clear out any previous renders */
-        var svgDiv = document.getElementById(svgDivID);
-        while (svgDiv.childElementCount > 0)
-            svgDiv.removeChild(svgDiv.firstChild);
+        this.erase();
         
         /* create a new playground */
         this.svg = SVG(svgDivID).size(700, 700);
@@ -256,8 +316,17 @@ class CVIRender {
         this.scale = this.svg.width() / 2 / CVIProfile.maxScore;
         this.origin = new Point(
             this.svg.width() / 2, this.svg.height() / 2);
+        
     }
-
+    
+    /* scrub the SVG area clean */
+    erase() {
+        console.log("erase()");
+        var svgDiv = document.getElementById(this.svgDivID);
+        while (svgDiv.childElementCount > 0)
+            svgDiv.removeChild(svgDiv.firstChild);        
+    }
+    
     merchantQuadrantInfo() {
         return {
             'quadrant': [ 1, -1 ],
@@ -588,8 +657,6 @@ function cvi(name) {
     return;
 }
 
-/* global instance of renderer */
-var cviRender = null;
 
 function cviTool(name, folks) {
     if (!folks || folks.length == 0)

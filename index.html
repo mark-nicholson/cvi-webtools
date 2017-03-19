@@ -1,60 +1,51 @@
 <html>
     <head>
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <!-- Datatables Support -->
+        <link href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css" rel="stylesheet">
+        <link href="https://cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css" rel="stylesheet">
+        <!-- Datatables Extensions -->
+        <link href="https://cdn.datatables.net/buttons/1.2.4/css/buttons.dataTables.min.css" rel="stylesheet">
+        <link href="https://cdn.datatables.net/select/1.2.1/css/select.dataTables.min.css" rel="stylesheet">
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="cvi-tools.css"></link>
         <meta charset="UTF-8">
     </head>
 
 <body>
     <div>
-        <div style="width: 100%">
+        <div style="width: 100%" class="container">
             <div id="cviNames" class="side-box">
-                <table id="cviTable" class="ctable">
+                <table id="cviTable" class="table table-striped table-bordered" cellspacing="0">
                     <thead>
-                        <td>*</td>
+                        <td></td>
                         <td>Name</td>
                         <td>Builder</td>
                         <td>Merchant</td>
                         <td>Innovator</td>
                         <td>Banker</td>
-                        <td><button onclick="delAllRow()">&times;</button></td>
                     </thead>
                     <tbody>
                     </tbody>
                     <tfoot>
                         <tr>
-                        <td><button onclick="addTableRow()">+</button></td>
-                        <td><input type="text" id="newName"></input></td>
-                        <td><input type="number" id="newBuilder" min="1" max="30"></input></td>
-                        <td><input type="number" id="newMerchant" min="1" max="30"></input></td>
-                        <td><input type="number" id="newInnovator" min="1" max="30"></input></td>
-                        <td><input type="number" id="newBanker" min="1" max="30"></input></td>
-                        <td></td>
+                            <td>
+                                <button type="button" class="btn btn-default btn-sm" onclick="addTableRow()">
+                                    <!-- <small><span class="glyphicon glyphicon-plus"</span></small> -->
+                                    <i class="fa fa-plus"></i>
+                                </button>
+                            </td>
+                            <td><input type="text" id="newName" size="20"></input></td>
+                            <td><input type="number" id="newBuilder" min="1" max="30"></input></td>
+                            <td><input type="number" id="newMerchant" min="1" max="30"></input></td>
+                            <td><input type="number" id="newInnovator" min="1" max="30"></input></td>
+                            <td><input type="number" id="newBanker" min="1" max="30"></input></td>
                         </tr>
-                    <tr>
-                        <td id="fileLoadCellId" colspan="3">
-                            <input type="file" id="uploadFile" name="dataFile" size="40" onchange="fileUpload()"></input>
-                        </td>
-                        <td colspan="1">
-                            <button id="exportInfo" onclick="exportInfo()">
-                                Export
-                            </button>
-                        </td>
-                        <td colspan="3">
-                            <button id="exportImage" onclick="exportImage()">
-                                Save Image
-                            </button>
-                            <select id="imageFormat">
-                                <option value="SVG">SVG</option>
-                                <option value="PNG">PNG</option>
-                                <option value="JPG">JPG</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="7">
-                            <a href="help.html">Instructions!</a
-                        </td>
-                    </tr>
+                        <tr>
+                            <td colspan="7">
+                                <a href="help.html">Instructions!</a
+                            </td>
+                        </tr>
                     </tfoot>
                 </table>
             </div>
@@ -64,9 +55,107 @@
     </div>
 </body>
 
+<!-- Modal -->
+<div class="modal fade" id="importDataModal" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Import Data</h4>
+      </div>
+      <div class="modal-body">
+        <p>Select the file which contains the data to import</p>
+        <p>
+            <input type="file" id="uploadFile2" name "files[]" size="40" accept=".csv, .json, text/plain" multiple></input>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" onclick="fileUpload()">
+            Import
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+            Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Asset Javascript -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="  crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+<!-- Datatables.net Support -->
+<script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
+<!-- Datatables Extensions -->
+<script src="https://cdn.datatables.net/buttons/1.2.4/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.2.1/js/dataTables.select.min.js"></script>
+
 <script type="text/javascript" src="node_modules/file-saver/FileSaver.min.js"></script>
 <script type="text/javascript" src="node_modules/svg.js/dist/svg.min.js"></script>
-<script type="text/javascript" src="cvi-table.min.js"></script>
-<script type="text/javascript" src="cvi-tools.min.js"></script>
+<script type="text/javascript" src="node_modules/jszip/dist/jszip.min.js"></script>
+<script type="text/javascript" src="node_modules/pdfmake/build/pdfmake.min.js"></script>
+
+<!-- Custom Javascript -->
+<script type="text/javascript" src="cvi-table.js"></script>
+<script type="text/javascript" src="cvi-tools.js"></script>
+
+<!-- Kickstart -->
+<script type="text/javascript">
+    /* global instance of renderer */
+    var cviRender = new CVIRender('svgDivID');
+    var groupCviProfile = new CVIGroupProfile("Meeting", []);
+    var cviDataTable;
+
+    /* bootstrap the table functionality */
+    $(document).ready(function() {
+        cviDataTable = $('#cviTable').DataTable( {
+            select: {
+                style: 'multi'
+            },
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    text: "Import",
+                    action: function () {
+                        $('#importDataModal').modal('show');
+                    }
+                },
+                {
+                    extend: 'collection',
+                    text: 'Export',
+                    buttons: [ 
+                        'csv', 
+                        'excel', 
+                        { text: 'json', action: exportInfo },
+                    ],
+                    fade: true,
+                    autoClose: true
+                },
+                {
+                    extend: 'collection',
+                    text: 'Image',
+                    buttons: [ 
+                        { text: 'Save SVG', action: saveSVG },
+                        { text: 'Save PNG', action: savePNG },
+                        { text: 'Save JPG', action: saveJPG },
+                    ],
+                    fade: true,
+                    autoClose: true
+                },
+            ]
+        });
+        cviDataTable.tables().body().on('click', 'tr td.delete-control', deleteControl);
+        cviDataTable.tables().body().on('click', 'tr td.cvi-draw-control', rowClick);
+        //cviDataTable.tables().body().on('click', 'tr', rowClick); // This does ANYWHERE on a row
+    } );
+    
+</script>
 
 </html>

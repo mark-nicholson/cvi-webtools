@@ -10,7 +10,17 @@
     display: table;
 }
 
-.ctable {
+.td-cvi-param {
+    text-align: center;
+}
+
+td.delete-control {
+}
+
+td.cvi-draw-control {
+}
+
+/*.ctable {
 	margin: 0 0 0 0px;
     table-layout:fixed;
     display: table;
@@ -26,4 +36,4 @@ td {
 
 tfoot {
     background-color: lightgray;
-}
+}*/

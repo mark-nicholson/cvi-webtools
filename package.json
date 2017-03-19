@@ -1,6 +1,6 @@
 {
   "name": "cvi-tools",
-  "version": "0.9.5",
+  "version": "1.0.0",
   "description": "An HTML5 utility to display and compare Core-Value-Index profiles",
   "main": "cvi-tools.js",
   "scripts": {
