@@ -1,11 +1,11 @@
 {
   "name": "cvi-tools",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An HTML5 utility to display and compare Core-Value-Index profiles",
   "main": "cvi-tools.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
-    "build": "nodejs node_modules/uglify-js-harmony/bin/uglifyjs cvi-tools.js --mangle --comments /@source/ > cvi-tools.min.js; nodejs node_modules/uglify-js-harmony/bin/uglifyjs cvi-table.js --mangle --comments /@source/ > cvi-table.min.js"
+    "build": "nodejs node_modules/uglify-js-harmony/bin/uglifyjs cvi-tools.js --compress --comments /@source/ > cvi-tools.min.js; nodejs node_modules/uglify-js-harmony/bin/uglifyjs cvi-table.js --compress --mangle --comments /@source/ > cvi-table.min.js"
   },
   "repository": {
     "type": "git",
@@ -22,7 +22,9 @@
   },
   "homepage": "https://github.com/mark-nicholson/cvi-webtools#readme",
   "devDependencies": {
-      "uglify-js-harmony": "^2.7.5",
+      "uglify-js-harmony": "^2.7.5"
+  },
+  "dependencies": {
       "file-saver": "1.3",
       "svg.js": "2.4.0"
   }

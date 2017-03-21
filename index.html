@@ -103,8 +103,8 @@
 <script type="text/javascript" src="node_modules/pdfmake/build/pdfmake.min.js"></script>
 
 <!-- Custom Javascript -->
-<script type="text/javascript" src="cvi-table.js"></script>
-<script type="text/javascript" src="cvi-tools.js"></script>
+<script type="text/javascript" src="cvi-table.min.js"></script>
+<script type="text/javascript" src="cvi-tools.min.js"></script>
 
 <!-- Kickstart -->
 <script type="text/javascript">
@@ -154,6 +154,21 @@
         cviDataTable.tables().body().on('click', 'tr td.delete-control', deleteControl);
         cviDataTable.tables().body().on('click', 'tr td.cvi-draw-control', rowClick);
         //cviDataTable.tables().body().on('click', 'tr', rowClick); // This does ANYWHERE on a row
+        
+        /* insert debug data */
+        var debug=false;
+        if (debug) {
+            __addTableRow([ "Jerry Beres", 9, 25, 28, 12]);
+            __addTableRow([ "Mike Allison", 16, 13, 22, 21]);
+            __addTableRow([ "Gene Curtis", 2, 22, 21, 7 ]);
+            __addTableRow([ "Richard Gardiner", 16, 20, 20, 16 ]);
+            __addTableRow([ "Gary Rosing", 12, 20, 24, 16 ]);
+            __addTableRow([ "Jeremy Thom", 17, 23, 22, 10 ]);
+            __addTableRow([ "Joel Vermillion", 18, 21, 18, 15 ]);
+            __addTableRow([ "Brian Wilson", 8, 26, 27, 11 ]);
+            __addTableRow([ "Mark Nicholson", 14, 21, 29, 8 ]);
+            __addTableRow([ "Karen Nicholson", 16, 29, 14, 13 ]);
+        }
     } );
     
 </script>

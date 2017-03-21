@@ -36,7 +36,7 @@ class Point {
         return npt;
     }
     
-    getOrigin() {
+    /*getOrigin() {
         return [this.ox, this.oy];
     }
 
@@ -47,7 +47,7 @@ class Point {
     
     setScale(s) {
         this.scale = s;
-    }
+    }*/
     
     x() {
         return this._x * this.scale + this.ox;
@@ -311,12 +311,11 @@ class CVIRender {
         
         /* create a new playground */
         this.svg = SVG(svgDivID).size(700, 700);
-
+        
         /* set the general params */
         this.scale = this.svg.width() / 2 / CVIProfile.maxScore;
         this.origin = new Point(
             this.svg.width() / 2, this.svg.height() / 2);
-        
     }
     
     /* scrub the SVG area clean */
@@ -337,7 +336,7 @@ class CVIRender {
                 CVIRender.merchantLightColour,
                 CVIRender.merchantDarkColour
             ],
-            'title-location': [ 0.9, 0.05 ]
+            'title-location': [ 0.8, 0.3 ]
         }
     }
     
@@ -351,7 +350,7 @@ class CVIRender {
                 CVIRender.innovatorLightColour,
                 CVIRender.innovatorDarkColour                
             ],
-            'title-location': [ 0.9, 0.95 ]
+            'title-location': [ 0.8, 1.1 ]
         }
     }
     
@@ -365,7 +364,7 @@ class CVIRender {
                 CVIRender.bankerLightColour,
                 CVIRender.bankerDarkColour
             ],
-            'title-location': [ 0.1, 0.95 ]
+            'title-location': [ 0.2, 1.1 ]
         }
     }
     
@@ -379,7 +378,7 @@ class CVIRender {
                 CVIRender.builderLightColour,
                 CVIRender.builderDarkColour
             ],
-            'title-location': [ 0.1, 0.05 ]
+            'title-location': [ 0.2, 0.3 ]
         }
 
     }
@@ -397,23 +396,14 @@ class CVIRender {
         ];
 
         /* add the reference points */
-        if (!cviProfile)
-            return quads;
-        
-        quads[0].points = cviProfile.builderPoints();
-        quads[1].points = cviProfile.merchantPoints();
-        quads[2].points = cviProfile.innovatorPoints();
-        quads[3].points = cviProfile.bankerPoints();
-
-        /* translate the points */
-        for (qi in quads) {
-            pts = quads[qi].points;
-            for (pi in pts) {
-                pts[pi].setOrigin(this.origin.x(), this.origin.y());
-                pts[pi].setScale(this.scale);
-            }
+        if (cviProfile) {
+            quads[0].points = cviProfile.builderPoints();
+            quads[1].points = cviProfile.merchantPoints();
+            quads[2].points = cviProfile.innovatorPoints();
+            quads[3].points = cviProfile.bankerPoints();
         }
-        
+
+        /* done */
         return quads;
     }
     
@@ -427,17 +417,17 @@ class CVIRender {
         
         for (qi in quads) {
             qInfo = quads[qi].quadrant;
-            
-            w = this.svg.width()/2;
-            h = this.svg.height()/2;
-            x = 0;
-            if (qInfo[0] > 0)
-                x = w;
-            y = 0
-            if (qInfo[1] > 0)
-                y = h;
 
-            this.svg.rect(w, h).move(x,y).fill(cssColour);
+            w = CVIProfile.maxScore;
+            h = CVIProfile.maxScore;
+            x = 0;
+            if (qInfo[0] < 0)
+                x -= w;
+            y = 0;
+            if (qInfo[1] < 0)
+                y -= h;
+
+            this.bgGroup.rect(w, h).move(x,y).fill(cssColour);
         }
     }
     
@@ -449,6 +439,8 @@ class CVIRender {
         var cssColour = '.cviCanvas.quadrant-background-colour';
         var quads = this._get_quadrants(null);
         var xLoc, yLoc, title, att;
+        var f1Size = 2;
+        var f2Size = 1.5;
         
         for (qi in quads) {
             qInfo = quads[qi];
@@ -460,36 +452,44 @@ class CVIRender {
                 title += cviProfile[att];
             else
                 title += cviProfile[att].toFixed(2);
-            xLoc = this.svg.width() * qInfo['title-location'][0];
-            yLoc = this.svg.height() * qInfo['title-location'][1];
-            
+        
+            xLoc = CVIProfile.maxScore * qInfo['title-location'][0];
+            yLoc = CVIProfile.maxScore * qInfo['title-location'][1];
+
+            if (qInfo['quadrant'][0] < 0)
+                xLoc -= CVIProfile.maxScore;
+            if (qInfo['quadrant'][1] < 0)
+                yLoc -= CVIProfile.maxScore;
+
             /* configure the action */
-            this.svg.text(title)
-                .move(xLoc, yLoc-10)
+            this.textGroup.text(title)
+                .move(xLoc, yLoc-f1Size/1.5)
                 .fill('black')
                 .font( {
                     family: 'Arial',
-                    size: '20px',
+                    size: f1Size,
                     anchor: 'middle'
                 });
 
-            this.svg.text("[" + qInfo['core-value'] + "]")
-                .move(xLoc, yLoc+10)
+            this.textGroup.text("[" + qInfo['core-value'] + "]")
+                .move(xLoc, yLoc+f1Size/1.5)
                 .fill('black')
                 .font( {
                     family: 'Arial',
-                    size: '16px',
+                    size: f2Size,
                     anchor: 'middle'
                 });
         }
     }
-    
+
+    /* reduce the true point size by the likely scaling to maintain perspective */
     renderReferencePoints(pList) {
         var pi, pt;
         for (pi in pList) {
             pt = pList[pi];
-            this.svg.circle(4)
-                .move(pt.x()-2, pt.y()-2)
+            this.polyGroup
+                .circle(4/this.scale)
+                .move(pt.x()-2/this.scale, pt.y()-2/this.scale)
                 .fill('black');
         }
     }
@@ -516,23 +516,24 @@ class CVIRender {
         else  //(qInfo['quadrant'][0] < 0 && qInfo['quadrant'][1] < 0)
             gradient.from(1,1).to(0,0);
         
-        var pgPts = [ [this.svg.width()/2, this.svg.height()/2] ];
+        var pgPts = [ [0, 0] ];
         for (pi in qInfo['points']) {
             pt = qInfo['points'][pi];
             pgPts.push( [pt.x(), pt.y()] );
         }
-        this.svg.polygon(pgPts).fill(gradient);
+        this.polyGroup.polygon(pgPts)
+            .fill(gradient);
         
         if (drawBorder) {
-            this.svg.line(
+            this.polyGroup.line(
                 qInfo['points'][0].x(), qInfo['points'][0].y(),
                 qInfo['points'][1].x(), qInfo['points'][1].y()
-            ).stroke({ width: 3, color: CVIRender.borderColour });
+            ).stroke({ width: 3/this.scale, color: CVIRender.borderColour });
 
-            this.svg.line(
+            this.polyGroup.line(
                 qInfo['points'][1].x(), qInfo['points'][1].y(),
                 qInfo['points'][2].x(), qInfo['points'][2].y()
-            ).stroke({ width: 3, color: CVIRender.borderColour });
+            ).stroke({ width: 3/this.scale, color: CVIRender.borderColour });
 
         }
     }
@@ -546,10 +547,23 @@ class CVIRender {
         var pi, qi, quads, qInfo;
         var profile, profiles;
         var cviProfile;
+
+        /* setup an SVG group for each construct. 
+         *  Note: declaration order is critical! The order they are 
+         *  declared is the LAYER they are rendered. */
+        
+        /* group for entire image */
+        this.allGroup = this.svg.group();
+        
+        /* subgroups for testing and segregation */
+        this.bgGroup = this.allGroup.group();
+        this.polyGroup = this.allGroup.group();
+        this.textGroup = this.allGroup.group();
+        this.coordGroup = this.allGroup.group();
         
         /* identify the input */
         if (data instanceof CVIGroupProfile) {
-            console.log("Render(): Is a CVIGroupProfile");
+            //console.log("Render(): Is a CVIGroupProfile");
             profiles = [];
             for (pi in data.profiles)
                 profiles.push(data.profiles[pi]);
@@ -557,23 +571,24 @@ class CVIRender {
             cviProfile = data;
         }
         else if (data instanceof CVIProfile) {
-            console.log("Render(): Is a CVIProfile");
+            //console.log("Render(): Is a CVIProfile");
             profiles = [ ];
             cviProfile = data;
         }
         else {
             /* should be a list */
-            console.log("Render(): received list")
+            //console.log("Render(): received list")
             cviProfile = data.shift();
             profiles = data;
         }
         
         /* install the backgrounds for each quadrant */
         this.renderQuandrantBackgrounds();
-        
+
+        /* overlay the profiles */
         for (pi in profiles) {
             profile = profiles[pi];
-            console.log("Rendering: " + profile.name);
+            //console.log("Rendering: " + profile.name);
             
             quads = this._get_quadrants(profile);
 
@@ -595,28 +610,30 @@ class CVIRender {
             this.renderPolygon(qInfo, drawBorder);
             this.renderReferencePoints(qInfo['points']);
         }
-        
 
         /* overlay the headings */
         this.renderTextLayer(cviProfile);
-        
+
         /* draw the white coordinate lines */
         this.renderCoordinateLines();
+
+        /* do one big scaling of the whole image */
+        this.allGroup
+            .scale(this.scale)
+            .translate(this.origin.x(), this.origin.y());
     }
 
     /*
     * draw coordinate lines
     */
     renderCoordinateLines() {
-        this.svg.line(
-            this.svg.width()/2, 0,
-            this.svg.width()/2, this.svg.height()
-        ).stroke({ width: 6, color: 'white' });
+        this.coordGroup
+            .line(0, -CVIProfile.maxScore,0, CVIProfile.maxScore)
+            .stroke({ width: 6/this.scale, color: 'white' });
 
-        this.svg.line(
-            0, this.svg.height()/2,
-            this.svg.width(), this.svg.height()/2
-        ).stroke({ width: 6, color: 'white' });
+        this.coordGroup
+            .line(CVIProfile.maxScore, 0, -CVIProfile.maxScore, 0)
+            .stroke({ width: 6/this.scale, color: 'white' });
     }
 }
 /* statics */

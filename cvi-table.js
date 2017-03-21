@@ -332,7 +332,7 @@ function rowClick() {
     var curRow = table.row( this );
     var curData = curRow.data();
     if (!curData || curData.length != 6) {
-        console.log("rowClick() got a non-table row")
+        //console.log("rowClick() got a non-table row")
         return;
     }
 
@@ -342,7 +342,7 @@ function rowClick() {
     
     /* generate the profile */
     var curProfile = new CVIProfile(curData[1], curData[2], curData[3], curData[4], curData[5]);
-    console.log("rowClick(): " + curProfile.toString());
+    //console.log("rowClick(): " + curProfile.toString());
 
     /* add or remove it... */
     if (preselected)
